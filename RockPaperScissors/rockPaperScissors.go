@@ -7,33 +7,45 @@ import (
 	"strings"
 )
 
-func moveTotal(c string) int {
+func getRoundScore(opp, mine string) int {
 	const (
 		Rock     = 1
 		Paper    = 2
 		Scissors = 3
+
+		LOSS = 0
+		DRAW = 3
+		WIN  = 6
 	)
 
-	switch c {
-	case "X", "A":
-		return Rock
-	case "Y", "B":
-		return Paper
-	case "Z", "C":
-		return Scissors
-	default:
-		return 0
-	}
-}
-
-func getRoundScore(opp, mine string) int {
-	player1 := moveTotal(opp)
-	player2 := moveTotal(mine)
-
-	if player1 == player2 {
-		return 3
-	} else if player2 > player1 {
-		return 6
+	switch mine {
+	case "X":
+		switch opp {
+		case "A":
+			return Rock + DRAW
+		case "B":
+			return Rock + LOSS
+		case "C":
+			return Rock + WIN
+		}
+	case "Y":
+		switch opp {
+		case "A":
+			return Paper + WIN
+		case "B":
+			return Paper + DRAW
+		case "C":
+			return Paper + LOSS
+		}
+	case "Z":
+		switch opp {
+		case "A":
+			return Scissors + LOSS
+		case "B":
+			return Scissors + WIN
+		case "C":
+			return Scissors + DRAW
+		}
 	}
 
 	return 0
@@ -53,22 +65,15 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		moves := strings.Fields(line)
-		sum := 0
 
 		// Each line has 2 columns
 		// col 1: oppnent's move
 		// col 2: my move
-		sum = moveTotal(moves[1])
-		// Get the score from the round
-		sum += getRoundScore(moves[0], moves[1])
-
-		// Sum the score
-		totalScore += sum
+		totalScore += getRoundScore(moves[0], moves[1])
 	}
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error reading file: ", err)
 	}
-
 	fmt.Printf("The final score is: %d", totalScore)
 }
