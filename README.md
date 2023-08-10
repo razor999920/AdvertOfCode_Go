@@ -1,3 +1,3 @@
 # Practice Go
 ## Advert of code
-I am learning Go and practicing the languages using the questions from Advert of Go
+I'm currently expanding my programming skills by learning Go. To practice and deepen my understanding of the language, I'm tackling various questions and challenges from the Advert of Go.
