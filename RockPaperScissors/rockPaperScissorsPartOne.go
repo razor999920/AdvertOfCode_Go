@@ -48,7 +48,7 @@ func getRoundScore(opp, mine string) int {
 		}
 	}
 
-	return 0
+	return LOSS
 }
 
 func main() {
