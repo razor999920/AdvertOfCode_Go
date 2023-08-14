@@ -17,7 +17,10 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
+
+		compartment1 := line[:len(line)/2]
+		comompartment2 := line[len(line)/2:]
+		println(compartment1, comompartment2)
 	}
 
 	if err := scanner.Err(); err != nil {
