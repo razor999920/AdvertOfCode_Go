@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("demo.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -44,7 +44,6 @@ func getInvalidItem(compartment1, compartment2 string) int {
 	for _, key := range compartment2 {
 		_, exists := compartmentSet[key]
 		if exists {
-			fmt.Printf("%c", key)
 			acsiPosition := int(key)
 
 			if acsiPosition < 97 {
