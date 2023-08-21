@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("partTwoDemo.txt")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -15,45 +15,26 @@ func main() {
 	defer file.Close()
 
 	// PriorityItems counter
-	priorityItemsTotal := 0
+	groupBadgePriority := 0
 
 	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
+	lines := make([]string, 3)
+	for i := 0; scanner.Scan(); i = (i + 1) % 3 {
+		lines[i] = scanner.Text()
 
-		compartment1 := line[:len(line)/2]
-		compartment2 := line[len(line)/2:]
-
-		priorityItemsTotal += getInvalidItem(compartment1, compartment2)
+		if i == 2 {
+			groupBadgePriority += getGroupBadgePriority(lines[0], lines[1], lines[2])
+		}
 	}
 
-	fmt.Printf("The sum of the priorities of the listed items types is: %d", priorityItemsTotal)
+	fmt.Printf("The sum of the priorities of the listed items types is: %d", groupBadgePriority)
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error reading file:", err)
 	}
 }
 
-func getInvalidItem(compartment1, compartment2 string) int {
-	compartmentSet := make(map[rune]struct{})
-
-	for _, key := range compartment1 {
-		compartmentSet[key] = struct{}{}
-	}
-
-	for _, key := range compartment2 {
-		_, exists := compartmentSet[key]
-		if exists {
-			acsiPosition := int(key)
-
-			if acsiPosition < 97 {
-				return acsiPosition - int('A') + 27
-			}
-
-			return acsiPosition - int('a') + 1
-		}
-
-	}
+func getGroupBadgePriority(elfOneItems, elfTwoItems, elfThreeItems string) int {
 
 	return 0
 }
