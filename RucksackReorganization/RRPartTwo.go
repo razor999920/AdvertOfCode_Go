@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
-	file, err := os.Open("partTwoDemo.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -34,7 +35,19 @@ func main() {
 	}
 }
 
-func getGroupBadgePriority(elfOneItems, elfTwoItems, elfThreeItems string) int {
+func getGroupBadgePriority(elfOneItemList, elfTwoItemList, elfThreeItemList string) int {
+	for _, char := range elfOneItemList {
+
+		if strings.ContainsRune(elfTwoItemList, char) && strings.ContainsRune(elfThreeItemList, char) {
+			acsiPosition := int(char)
+
+			if acsiPosition < 97 {
+				return acsiPosition - int('A') + 27
+			}
+
+			return acsiPosition - int('a') + 1
+		}
+	}
 
 	return 0
 }
