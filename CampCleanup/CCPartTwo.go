@@ -37,21 +37,15 @@ func doesElfContainFullRange(firstElf, secondElf string) bool {
 		return false
 	}
 
-	if firstElfStart < secondElfStart && firstElfEnd >= secondElfEnd {
+	if firstElfStart == secondElfStart || firstElfEnd == secondElfEnd ||
+		secondElfStart == firstElfEnd {
 		return true
-	} else if firstElfStart > secondElfStart && firstElfEnd <= secondElfEnd {
-		return true
-	} else if firstElfStart == secondElfStart {
-		if firstElfEnd >= secondElfEnd || firstElfEnd <= secondElfEnd {
-			return true
-		}
 	}
-
 	return false
 }
 
 func main() {
-	file, err := os.Open("CCInput.txt")
+	file, err := os.Open("CCDemo.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,5 +68,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%d elves fully conatin their partner", fullRangeContainCounter)
+	fmt.Printf("%d elves pairs overlap", fullRangeContainCounter)
 }
