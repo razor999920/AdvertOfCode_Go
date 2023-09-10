@@ -38,14 +38,22 @@ func doesElfContainFullRange(firstElf, secondElf string) bool {
 	}
 
 	if firstElfStart == secondElfStart || firstElfEnd == secondElfEnd ||
-		secondElfStart == firstElfEnd {
+		secondElfStart == firstElfEnd || secondElfEnd == firstElfStart {
+		return true
+	} else if firstElfStart > secondElfStart && firstElfStart < secondElfEnd {
+		return true
+	} else if firstElfStart < secondElfStart && firstElfEnd > secondElfStart {
+		return true
+	} else if secondElfStart > firstElfStart && secondElfStart < firstElfEnd {
 		return true
 	}
+
+	fmt.Println(firstElfSlice, secondElfSlice)
 	return false
 }
 
 func main() {
-	file, err := os.Open("CCDemo.txt")
+	file, err := os.Open("CCInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
