@@ -8,14 +8,10 @@ import (
 	"strings"
 )
 
-func getCargeFromLine(crateMap map[int]rune, inputRow string) {
-	fmt.Println(inputRow)
-
+func getCargeFromLine(crateMap map[int][]rune, inputRow string) {
 	for index, ascii := range inputRow {
 		if ascii >= 65 && ascii <= 90 {
-			char := rune(ascii)
-			crateMap[index/2] = char
-			fmt.Println(ascii)
+			crateMap[index/2] = append(crateMap[index/2], ascii)
 		}
 	}
 }
@@ -28,19 +24,27 @@ func main() {
 	defer file.Close()
 
 	// Map for the crates
-	cargoMap := make(map[int]rune)
+	cargoMap := make(map[int][]rune)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
 
+		if len(line) == 0 {
+			continue
+		}
+
+		fmt.Println(line)
+
+		if strings.Contains(line, "move") {
+			// Move the cargo around based on the intructions
+
+			continue
+		}
+
 		if !strings.Contains(line, "1") {
 			// Get carge from each line
 			getCargeFromLine(cargoMap, line)
-		}
-
-		if line == "" {
-			continue
 		}
 	}
 
