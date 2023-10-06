@@ -10,8 +10,16 @@ import (
 
 func getCargeFromLine(crateMap map[int][]rune, inputRow string) {
 	for index, ascii := range inputRow {
+		var key int
+
 		if ascii >= 65 && ascii <= 90 {
-			crateMap[index/2] = append(crateMap[index/2], ascii)
+			if index == 1 {
+				key = index
+			} else {
+				key = ((index - 1) / 4) + 1
+			}
+
+			crateMap[key] = append(crateMap[key], ascii)
 		}
 	}
 }
@@ -34,10 +42,46 @@ func main() {
 			continue
 		}
 
-		fmt.Println(line)
-
 		if strings.Contains(line, "move") {
 			// Move the cargo around based on the intructions
+			instructions := strings.Fields(line)
+
+			var num int
+			var from int
+			var to int
+			for index, instruction := range instructions {
+				var value int
+
+				if _, err := fmt.Sscanf(instruction, "%d", &value); err != nil {
+					continue
+				}
+
+				if index == 1 {
+					num = value
+
+					continue
+				}
+				if index == 3 {
+					from = value
+
+					continue
+				}
+
+				if index == 5 {
+					to = value
+
+					i := 0
+					for num > i {
+						top := cargoMap[from][len(cargoMap[from])-1]
+						cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
+						cargoMap[to] = append(cargoMap[to], top)
+
+						i++
+					}
+				}
+
+				fmt.Println(index, num, from, to)
+			}
 
 			continue
 		}
@@ -48,7 +92,16 @@ func main() {
 		}
 	}
 
+	// Get head
+	var crateStack string
+	for _, key := range cargoMap {
+		top := key[len(key)-1]
+		crateStack += string(top)
+	}
+
+	// Result
 	fmt.Println(cargoMap)
+	fmt.Println("The crates that will end up on top are: ", crateStack)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
