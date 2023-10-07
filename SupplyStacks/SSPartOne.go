@@ -25,7 +25,7 @@ func getCargeFromLine(crateMap map[int][]rune, inputRow string) {
 }
 
 func main() {
-	file, err := os.Open("SSDemo.txt")
+	file, err := os.Open("SSInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
