@@ -19,7 +19,7 @@ func getCargeFromLine(crateMap map[int][]rune, inputRow string) {
 				key = ((index - 1) / 4) + 1
 			}
 
-			crateMap[key] = append(crateMap[key], ascii)
+			crateMap[key] = append([]rune{ascii}, crateMap[key]...)
 		}
 	}
 }
@@ -73,14 +73,13 @@ func main() {
 					i := 0
 					for num > i {
 						top := cargoMap[from][len(cargoMap[from])-1]
-						cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
 						cargoMap[to] = append(cargoMap[to], top)
+						// Readjuct the from list
+						cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
 
 						i++
 					}
 				}
-
-				fmt.Println(index, num, from, to)
 			}
 
 			continue
@@ -94,13 +93,13 @@ func main() {
 
 	// Get head
 	var crateStack string
-	for _, key := range cargoMap {
-		top := key[len(key)-1]
+	for index := 1; index <= len(cargoMap); index++ {
+		top := cargoMap[index][len(cargoMap[index])-1]
+		// Add the cargo to the string
 		crateStack += string(top)
 	}
 
 	// Result
-	fmt.Println(cargoMap)
 	fmt.Println("The crates that will end up on top are: ", crateStack)
 
 	if err := scanner.Err(); err != nil {
