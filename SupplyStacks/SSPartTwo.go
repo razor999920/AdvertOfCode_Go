@@ -25,7 +25,7 @@ func getCargeFromLine(crateMap map[int][]rune, inputRow string) {
 }
 
 func main() {
-	file, err := os.Open("SSDemo.txt")
+	file, err := os.Open("SSInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,44 +43,15 @@ func main() {
 		}
 
 		if strings.Contains(line, "move") {
-			// Move the cargo around based on the intructions
-			instructions := strings.Fields(line)
+			var num, from, to int
+			fmt.Sscanf(line, "move %d from %d to %d", &num, &from, &to)
 
-			var num int
-			var from int
-			var to int
-			for index, instruction := range instructions {
-				var value int
+			// Get the stack of crates to move, and update the source stack
+			crateStack := cargoMap[from][(len(cargoMap[from]) - num):]
+			cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
 
-				if _, err := fmt.Sscanf(instruction, "%d", &value); err != nil {
-					continue
-				}
-
-				if index == 1 {
-					num = value
-
-					continue
-				}
-				if index == 3 {
-					from = value
-
-					continue
-				}
-
-				if index == 5 {
-					to = value
-					// get all the cargo at once
-					crateStack := cargoMap[from][(len(cargoMap[from]) - num):]
-
-					fmt.Println(crateStack)
-
-					if len(crateStack) >= 1 {
-						cargoMap[to] = append(cargoMap[to], crateStack...)
-						// Readjuct the from list
-						cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
-					}
-				}
-			}
+			// Append the moved stack of crates to the destination stack
+			cargoMap[to] = append(cargoMap[to], crateStack...)
 
 			continue
 		}
