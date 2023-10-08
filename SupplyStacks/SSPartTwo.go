@@ -69,15 +69,15 @@ func main() {
 
 				if index == 5 {
 					to = value
+					// get all the cargo at once
+					crateStack := cargoMap[from][(len(cargoMap[from]) - num):]
 
-					i := 0
-					for num > i {
-						top := cargoMap[from][len(cargoMap[from])-1]
-						cargoMap[to] = append(cargoMap[to], top)
+					fmt.Println(crateStack)
+
+					if len(crateStack) >= 1 {
+						cargoMap[to] = append(cargoMap[to], crateStack...)
 						// Readjuct the from list
 						cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
-
-						i++
 					}
 				}
 			}
