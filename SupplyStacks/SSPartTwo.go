@@ -8,18 +8,52 @@ import (
 	"strings"
 )
 
-func getCargeFromLine(crateMap map[int][]rune, inputRow string) {
-	for index, ascii := range inputRow {
-		var key int
+// CrateStack represents a stack of crates
+type CrateStack map[int][]rune
 
-		if ascii >= 65 && ascii <= 90 {
-			if index == 1 {
-				key = index
-			} else {
-				key = ((index - 1) / 4) + 1
-			}
+// Push adds a new crate to the specified stack
+func (cs CrateStack) Push(stackIndex int, crate rune) {
+	cs[stackIndex] = append([]rune{crate}, cs[stackIndex]...)
+}
 
-			crateMap[key] = append([]rune{ascii}, crateMap[key]...)
+// Pop removes and returns the top crate from the specified stack
+func (cs CrateStack) Pop(stackIndex int) (rune, bool) {
+	stack := cs[stackIndex]
+	if len(stack) == 0 {
+		return 0, false
+	}
+	crate := stack[len(stack)-1]
+	cs[stackIndex] = stack[:len(stack)-1]
+	return crate, true
+}
+
+// ParseAndExecute parses a command and performs the necessary actions
+func (cs CrateStack) ParseAndExecute(command string) {
+	if command == "" {
+		return
+	}
+	if strings.Contains(command, "move") {
+		var num, from, to int
+		fmt.Sscanf(command, "move %d from %d to %d", &num, &from, &to)
+		cs.Move(num, from, to)
+	} else if !strings.Contains(command, "1") {
+		cs.AddCrates(command)
+	}
+}
+
+// Move moves a number of crates from one stack to another
+func (cs CrateStack) Move(num, from, to int) {
+	crateStack := cs[from][(len(cs[from]) - num):]
+	cs[from] = cs[from][:len(cs[from])-num]
+	cs[to] = append(cs[to], crateStack...)
+}
+
+// AddCrates adds crates to the stacks based on the input string
+func (cs CrateStack) AddCrates(input string) {
+	for index, ascii := range input {
+		if ascii >= 'A' && ascii <= 'Z' {
+			key := index/4 + 1
+			cs.Push(key, ascii)
 		}
 	}
 }
@@ -31,49 +65,22 @@ func main() {
 	}
 	defer file.Close()
 
-	// Map for the crates
-	cargoMap := make(map[int][]rune)
+	crateStacks := CrateStack{}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()
-
-		if len(line) == 0 {
-			continue
-		}
-
-		if strings.Contains(line, "move") {
-			var num, from, to int
-			fmt.Sscanf(line, "move %d from %d to %d", &num, &from, &to)
-
-			// Get the stack of crates to move, and update the source stack
-			crateStack := cargoMap[from][(len(cargoMap[from]) - num):]
-			cargoMap[from] = cargoMap[from][:len(cargoMap[from])-1]
-
-			// Append the moved stack of crates to the destination stack
-			cargoMap[to] = append(cargoMap[to], crateStack...)
-
-			continue
-		}
-
-		if !strings.Contains(line, "1") {
-			// Get carge from each line
-			getCargeFromLine(cargoMap, line)
-		}
+		crateStacks.ParseAndExecute(scanner.Text())
 	}
-
-	// Get head
-	var crateStack string
-	for index := 1; index <= len(cargoMap); index++ {
-		top := cargoMap[index][len(cargoMap[index])-1]
-		// Add the cargo to the string
-		crateStack += string(top)
-	}
-
-	// Result
-	fmt.Println("The crates that will end up on top are: ", crateStack)
-
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+
+	var result string
+	for i := 1; i <= len(crateStacks); i++ {
+		if crate, ok := crateStacks.Pop(i); ok {
+			result += string(crate)
+		}
+	}
+
+	fmt.Println("The crates that will end up on top are:", result)
 }
