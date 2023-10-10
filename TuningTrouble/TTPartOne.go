@@ -75,11 +75,6 @@ func getFirstMarker(signal string) int {
 		if len(markerMap) == 4 {
 			break
 		}
-
-		for _, char := range markerQueue {
-			fmt.Printf("%c ", char)
-		}
-		fmt.Println()
 	}
 
 	if !markerQueue.IsEmpty() {
