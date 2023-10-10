@@ -15,8 +15,6 @@ func (q *Queue) IsEmpty() bool {
 
 func (q *Queue) Enqueue(element interface{}) {
 	*q = append(*q, element) // add to the end of queue
-
-	fmt.Println(*q)
 }
 
 func (q *Queue) Dequeue() interface{} {
@@ -37,8 +35,6 @@ func getFirstMarker(signal string) string {
 	markerMap := make(map[rune]int)
 
 	for _, char := range signal {
-		fmt.Printf("%c\n", char)
-
 		_, ok := markerMap[char]
 		if !ok {
 			// Add the single signal to the maps
@@ -56,17 +52,30 @@ func getFirstMarker(signal string) string {
 					break
 				}
 			}
-		}
 
-		fmt.Println(markerMap)
+			// Now add it to the queue
+			markerQueue.Enqueue(char)
+			markerMap[char] = 1
+		}
 
 		if len(markerMap) == 4 {
 			break
 		}
+
+		for _, char := range markerQueue {
+			fmt.Printf("%c ", char)
+		}
+		fmt.Println()
 	}
 
-	for key := range markerMap {
-		marker += string(key)
+	for !markerQueue.IsEmpty() {
+		signal := markerQueue.Dequeue()
+		// Remove the value from the map as well
+		if s, ok := signal.(rune); ok {
+			delete(markerMap, s)
+		}
+
+		marker += string(signal.(rune))
 	}
 
 	return marker
@@ -84,6 +93,6 @@ func main() {
 	for scanner.Scan() {
 		marker := getFirstMarker(scanner.Text())
 
-		fmt.Printf("Before the first start-of-packer is detacted, %c characters need to be processed", marker)
+		fmt.Printf("Before the first start-of-packer is detacted, %s characters need to be processed", marker)
 	}
 }
