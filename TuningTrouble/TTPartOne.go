@@ -84,7 +84,7 @@ func getFirstMarker(signal string) int {
 }
 
 func main() {
-	file, err := os.Open("TTDemo.txt")
+	file, err := os.Open("TTInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
