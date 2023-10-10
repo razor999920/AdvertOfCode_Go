@@ -72,7 +72,7 @@ func getFirstMarker(signal string) int {
 		markerQueue.Enqueue(char)
 		markerMap[char] = index
 
-		if len(markerMap) == 4 {
+		if len(markerMap) == 14 {
 			break
 		}
 	}
@@ -84,7 +84,7 @@ func getFirstMarker(signal string) int {
 }
 
 func main() {
-	file, err := os.Open("TTInput.txt")
+	file, err := os.Open("TTDemo.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,6 +95,6 @@ func main() {
 	for scanner.Scan() {
 		markerIndex := getFirstMarker(scanner.Text())
 
-		fmt.Printf("Before the first start-of-packer is detacted, %d characters need to be processed", markerIndex)
+		fmt.Printf("Before the first start-of-packer is detacted, %d characters need to be processed.\n", markerIndex)
 	}
 }
