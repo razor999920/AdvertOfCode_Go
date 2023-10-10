@@ -13,6 +13,22 @@ func (q *Queue) IsEmpty() bool {
 	return len(*q) == 0
 }
 
+func (q *Queue) Peak() interface{} {
+	if q.IsEmpty() {
+		return nil
+	}
+
+	return (*q)[0]
+}
+
+func (q *Queue) PeakLast() interface{} {
+	if q.IsEmpty() {
+		return nil
+	}
+
+	return (*q)[len(*q)-1]
+}
+
 func (q *Queue) Enqueue(element interface{}) {
 	*q = append(*q, element) // add to the end of queue
 }
@@ -28,19 +44,17 @@ func (q *Queue) Dequeue() interface{} {
 	return element
 }
 
-func getFirstMarker(signal string) string {
-	var marker string
+func getFirstMarker(signal string) int {
+	var markerIndex int
 
 	var markerQueue Queue
 	markerMap := make(map[rune]int)
 
-	for _, char := range signal {
+	for index, char := range signal {
+		// Check if exists in the map
 		_, ok := markerMap[char]
-		if !ok {
-			// Add the single signal to the maps
-			markerQueue.Enqueue(char)
-			markerMap[char] = 1
-		} else {
+
+		if ok {
 			for {
 				signal := markerQueue.Dequeue()
 				// Remove the value from the map as well
@@ -52,11 +66,11 @@ func getFirstMarker(signal string) string {
 					break
 				}
 			}
-
-			// Now add it to the queue
-			markerQueue.Enqueue(char)
-			markerMap[char] = 1
 		}
+
+		// Add the single signal to the maps
+		markerQueue.Enqueue(char)
+		markerMap[char] = index
 
 		if len(markerMap) == 4 {
 			break
@@ -68,17 +82,10 @@ func getFirstMarker(signal string) string {
 		fmt.Println()
 	}
 
-	for !markerQueue.IsEmpty() {
-		signal := markerQueue.Dequeue()
-		// Remove the value from the map as well
-		if s, ok := signal.(rune); ok {
-			delete(markerMap, s)
-		}
-
-		marker += string(signal.(rune))
+	if !markerQueue.IsEmpty() {
+		markerIndex = markerMap[markerQueue.PeakLast().(rune)] + 1
 	}
-
-	return marker
+	return markerIndex
 }
 
 func main() {
@@ -91,8 +98,8 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		marker := getFirstMarker(scanner.Text())
+		markerIndex := getFirstMarker(scanner.Text())
 
-		fmt.Printf("Before the first start-of-packer is detacted, %s characters need to be processed", marker)
+		fmt.Printf("Before the first start-of-packer is detacted, %d characters need to be processed", markerIndex)
 	}
 }
