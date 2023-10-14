@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -14,9 +15,21 @@ func main() {
 	}
 	defer file.Close()
 
+	commandMap := make(map[rune]int)
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		commands := strings.Split(scanner.Text(), " ")
+
+		if len(commands) == 3 && commands[1] == "cd" {
+			dir := rune(commands[2][0])
+			_, ok := commandMap[dir]
+			if !ok {
+				commandMap[dir] = 0
+			}
+		}
+
+		fmt.Println(commandMap)
 	}
 
 	if err := scanner.Err(); err != nil {
