@@ -12,6 +12,8 @@ type Stack struct {
 	items []rune
 }
 
+type Operation string
+
 func (stack *Stack) push(item rune) {
 	stack.items = append(stack.items, item)
 }
@@ -33,6 +35,12 @@ func (stack *Stack) peak() rune {
 
 	return stack.items[len(stack.items)-1]
 }
+
+const (
+	COMMAND   Operation = "$"
+	DIRECTORY Operation = "dir"
+	FILE      Operation = "file"
+)
 
 func main() {
 	file, err := os.Open("NSLDemo.txt")
