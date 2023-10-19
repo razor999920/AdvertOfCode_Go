@@ -76,6 +76,8 @@ func main() {
 	for scanner.Scan() {
 		commands := strings.Split(scanner.Text(), " ")
 
+		fmt.Println(commands)
+
 		operation := -1
 		if len(commands) >= 1 {
 			operation = getOperation(commands[0])
@@ -85,7 +87,11 @@ func main() {
 			// Based on the operation treat each line seperately
 			switch operation {
 			case int(COMMAND_VALUE):
-				file := commands[3]
+				if len(commands) == 2 {
+					continue
+				}
+
+				file := commands[2]
 
 				if file == ".." {
 					directoryStack.pop()
@@ -108,8 +114,8 @@ func main() {
 		}
 
 		// Print DS
-		fmt.Println(commandMap)
-		fmt.Println(directoryStack)
+		// fmt.Println(commandMap)
+		// fmt.Println(directoryStack)
 	}
 
 	if err := scanner.Err(); err != nil {
