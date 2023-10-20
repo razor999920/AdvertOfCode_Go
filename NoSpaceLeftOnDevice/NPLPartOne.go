@@ -119,15 +119,20 @@ func main() {
 
 	}
 
-	// Print DS
-	// fmt.Println(commandMap)
-	fmt.Println(directoryStack)
-
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	var result string
+	// Print DS
+	// fmt.Println(commandMap)
+	fmt.Println(directoryStack)
+
+	// Count total size of all the diractories
+	var result int
+
+	for _, size := range diractoryMap {
+		result += size
+	}
 
 	fmt.Println("The sum of the total size of directories is:", result)
 }
