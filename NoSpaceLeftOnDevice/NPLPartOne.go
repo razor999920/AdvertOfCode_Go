@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -40,10 +41,8 @@ func (stack *Stack) peak() rune {
 const (
 	COMMAND         Operation      = "$"
 	DIRECTORY       Operation      = "dir"
-	FILE            Operation      = "file"
 	COMMAND_VALUE   OperationValue = 1
 	DIRECTORY_VALUE OperationValue = 2
-	FILE_VALUE      OperationValue = 3
 )
 
 /*
@@ -55,8 +54,6 @@ func getOperation(operation string) int {
 		return 1
 	case string(DIRECTORY):
 		return 2
-	case string(FILE):
-		return 3
 	default:
 		return -1
 	}
@@ -69,24 +66,24 @@ func main() {
 	}
 	defer file.Close()
 
-	commandMap := make(map[rune]int)
+	diractoryMap := make(map[rune]int)
 	var directoryStack Stack
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		commands := strings.Split(scanner.Text(), " ")
 
-		fmt.Println(commands)
-
 		operation := -1
 		if len(commands) >= 1 {
 			operation = getOperation(commands[0])
 		}
 
+		var fileName rune
 		if operation != -1 {
 			// Based on the operation treat each line seperately
 			switch operation {
 			case int(COMMAND_VALUE):
+				// Ignore 'ls' command
 				if len(commands) == 2 {
 					continue
 				}
@@ -96,27 +93,35 @@ func main() {
 				if file == ".." {
 					directoryStack.pop()
 				} else {
-					directoryStack.push([]rune(file)[0]) // Push the file name to the stack. For example, stac.Push('a')
+					fileName = []rune(file)[0]
+					// Push the file name to the stack. For example, stac.Push('a')
+					directoryStack.push(fileName)
+					// Add the Dir to the map
+					diractoryMap[fileName] = 0
 				}
 			case int(DIRECTORY_VALUE):
-			case int(FILE_VALUE):
+				continue
 			default:
 				fmt.Println("Invalid operation found.")
 			}
-		}
+		} else {
+			// Add the file size to the map
+			value, err := strconv.Atoi(commands[0])
+			if err != nil {
+				fmt.Println("Invalid operation:", err)
+			}
 
-		if len(commands) == 3 && commands[1] == "cd" {
-			dir := rune(commands[2][0])
-			_, ok := commandMap[dir]
+			_, ok := diractoryMap[fileName]
 			if !ok {
-				commandMap[dir] = 0
+				diractoryMap[fileName] += value
 			}
 		}
 
-		// Print DS
-		// fmt.Println(commandMap)
-		// fmt.Println(directoryStack)
 	}
+
+	// Print DS
+	// fmt.Println(commandMap)
+	fmt.Println(directoryStack)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
