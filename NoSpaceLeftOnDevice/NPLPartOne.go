@@ -16,6 +16,10 @@ type Stack struct {
 type Operation string
 type OperationValue int
 
+func (stack *Stack) isEmpty() bool {
+	return len(stack.items) >= 1
+}
+
 func (stack *Stack) push(item rune) {
 	stack.items = append(stack.items, item)
 }
@@ -74,9 +78,12 @@ func main() {
 		commands := strings.Split(scanner.Text(), " ")
 
 		operation := -1
-		if len(commands) >= 1 {
-			operation = getOperation(commands[0])
+		if len(commands) <= 1 {
+			continue
 		}
+
+		// Find out what kind of command the line is doing
+		operation = getOperation(commands[0])
 
 		var fileName rune
 		if operation != -1 {
@@ -94,9 +101,20 @@ func main() {
 					directoryStack.pop()
 				} else {
 					fileName = []rune(file)[0]
-					// Push the file name to the stack. For example, stac.Push('a')
+
+					// Don't add '/' to the map
+					if fileName == '/' {
+						continue
+					}
+
+					// Push the file name to the stack. For example, stack.Push('a')
+					// Only push the parent file to the stack
+					if directoryStack.isEmpty() {
+						continue
+					}
+
 					directoryStack.push(fileName)
-					// Add the Dir to the map
+					// Add the diractory to the map
 					diractoryMap[fileName] = 0
 				}
 			case int(DIRECTORY_VALUE):
@@ -111,6 +129,11 @@ func main() {
 				fmt.Println("Invalid operation:", err)
 			}
 
+			// Get file name (assumed to always be the second value in line)
+			fileName = []rune(commands[1])[0]
+
+			fmt.Println(fileName)
+
 			_, ok := diractoryMap[fileName]
 			if !ok {
 				diractoryMap[fileName] += value
@@ -124,8 +147,7 @@ func main() {
 	}
 
 	// Print DS
-	// fmt.Println(commandMap)
-	fmt.Println(directoryStack)
+	fmt.Println(diractoryMap)
 
 	// Count total size of all the diractories
 	var result int
