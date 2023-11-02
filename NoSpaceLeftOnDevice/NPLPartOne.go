@@ -49,6 +49,8 @@ const (
 	DIRECTORY_VALUE OperationValue = 2
 )
 
+const MAX_DIRACTORY_SIZE int = 100000
+
 /*
 Determine what kind of operation does the line is requesting
 */
@@ -67,8 +69,10 @@ func getOperation(operation string) int {
 func getLargetValue(diractoryMap map[rune]int) int {
 	var largestSum int
 
-	for key, value := range diractoryMap {
-		fmt.Println(key, value)
+	for _, value := range diractoryMap {
+		if value <= MAX_DIRACTORY_SIZE && value > largestSum {
+			largestSum = value
+		}
 	}
 
 	return largestSum
@@ -135,8 +139,6 @@ func main() {
 				fmt.Println("Invalid operation:", err)
 			}
 
-			// fmt.Println(directoryStack)
-
 			// Store value in the parent file (store in the stack)
 			fileName = directoryStack.peak()
 
@@ -153,11 +155,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Print DS
-	fmt.Println(diractoryMap)
-
 	// Count total size of all the diractories
-	getLargetValue(diractoryMap)
-
-	fmt.Println("The sum of the total size of directories is:", 0)
+	fmt.Println("The sum of the total size of directories is:", getLargetValue(diractoryMap))
 }
