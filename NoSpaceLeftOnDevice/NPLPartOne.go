@@ -17,7 +17,7 @@ type Operation string
 type OperationValue int
 
 func (stack *Stack) isEmpty() bool {
-	return len(stack.items) >= 1
+	return len(stack.items) <= 0
 }
 
 func (stack *Stack) push(item rune) {
@@ -63,6 +63,17 @@ func getOperation(operation string) int {
 	}
 }
 
+/* Get the largest value close to 100,000 */
+func getLargetValue(diractoryMap map[rune]int) int {
+	var largestSum int
+
+	for key, value := range diractoryMap {
+		fmt.Println(key, value)
+	}
+
+	return largestSum
+}
+
 func main() {
 	file, err := os.Open("NSLDemo.txt")
 	if err != nil {
@@ -102,14 +113,9 @@ func main() {
 				} else {
 					fileName = []rune(file)[0]
 
-					// Don't add '/' to the map
-					if fileName == '/' {
-						continue
-					}
-
 					// Push the file name to the stack. For example, stack.Push('a')
 					// Only push the parent file to the stack
-					if directoryStack.isEmpty() {
+					if fileName == '/' || !directoryStack.isEmpty() {
 						continue
 					}
 
@@ -129,17 +135,18 @@ func main() {
 				fmt.Println("Invalid operation:", err)
 			}
 
-			// Get file name (assumed to always be the second value in line)
-			fileName = []rune(commands[1])[0]
+			// fmt.Println(directoryStack)
 
-			fmt.Println(fileName)
+			// Store value in the parent file (store in the stack)
+			fileName = directoryStack.peak()
 
 			_, ok := diractoryMap[fileName]
 			if !ok {
-				diractoryMap[fileName] += value
+				fileName = []rune(commands[1])[0]
 			}
-		}
 
+			diractoryMap[fileName] += value
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -150,11 +157,7 @@ func main() {
 	fmt.Println(diractoryMap)
 
 	// Count total size of all the diractories
-	var result int
+	getLargetValue(diractoryMap)
 
-	for _, size := range diractoryMap {
-		result += size
-	}
-
-	fmt.Println("The sum of the total size of directories is:", result)
+	fmt.Println("The sum of the total size of directories is:", 0)
 }
