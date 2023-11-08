@@ -20,6 +20,14 @@ func (stack *Stack) isEmpty() bool {
 	return len(stack.items) <= 0
 }
 
+func (stack *Stack) size() int {
+	if stack.isEmpty() {
+		return 0
+	}
+
+	return len(stack.items)
+}
+
 func (stack *Stack) push(item rune) {
 	stack.items = append(stack.items, item)
 }
@@ -52,6 +60,17 @@ const (
 const MAX_DIRACTORY_SIZE int = 100000
 
 /*
+Add the size of the last popped diractory to all the parent diractories
+*/
+func addSizeToTheParentDiractory(stack Stack, diractoryMap map[rune]int, size int) {
+	if stack.isEmpty() {
+		return
+	}
+
+	diractoryMap[stack.peak()] += size
+}
+
+/*
 Determine what kind of operation does the line is requesting
 */
 func getOperation(operation string) int {
@@ -79,13 +98,13 @@ func getLargetValue(diractoryMap map[rune]int) int {
 }
 
 func main() {
-	file, err := os.Open("NSLDemo.txt")
+	file, err := os.Open("NSLInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	diractoryMap := make(map[rune]int)
+	diractorySizeMap := make(map[rune]int)
 	var directoryStack Stack
 
 	scanner := bufio.NewScanner(file)
@@ -113,19 +132,16 @@ func main() {
 				file := commands[2]
 
 				if file == ".." {
-					directoryStack.pop()
+					lastDiractory := directoryStack.pop()
+					// Add the size to the parent diractory
+					addSizeToTheParentDiractory(directoryStack, diractorySizeMap, diractorySizeMap[lastDiractory])
 				} else {
 					fileName = []rune(file)[0]
 
-					// Push the file name to the stack. For example, stack.Push('a')
-					// Only push the parent file to the stack
-					if fileName == '/' || !directoryStack.isEmpty() {
-						continue
-					}
-
+					// Add diractory to the stack
 					directoryStack.push(fileName)
-					// Add the diractory to the map
-					diractoryMap[fileName] = 0
+					// Add the diractory to the size map
+					diractorySizeMap[fileName] = 0
 				}
 			case int(DIRECTORY_VALUE):
 				continue
@@ -142,12 +158,25 @@ func main() {
 			// Store value in the parent file (store in the stack)
 			fileName = directoryStack.peak()
 
-			_, ok := diractoryMap[fileName]
+			_, ok := diractorySizeMap[fileName]
 			if !ok {
 				fileName = []rune(commands[1])[0]
 			}
 
-			diractoryMap[fileName] += value
+			diractorySizeMap[fileName] += value
+		}
+	}
+
+	// There should only by root diractory in the stack
+	if directoryStack.size() >= 2 {
+		for {
+			if directoryStack.size() <= 1 {
+				break
+			}
+
+			lastDiractory := directoryStack.pop()
+			// Add the size to the parent diractory
+			addSizeToTheParentDiractory(directoryStack, diractorySizeMap, diractorySizeMap[lastDiractory])
 		}
 	}
 
@@ -155,6 +184,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println(diractorySizeMap)
+
 	// Count total size of all the diractories
-	fmt.Println("The sum of the total size of directories is:", getLargetValue(diractoryMap))
+	fmt.Println("The sum of the total size of directories is:", getLargetValue(diractorySizeMap))
 }
