@@ -9,94 +9,6 @@ import (
 	"strings"
 )
 
-type Stack struct {
-	items []rune
-}
-
-type Operation string
-type OperationValue int
-
-func (stack *Stack) isEmpty() bool {
-	return len(stack.items) <= 0
-}
-
-func (stack *Stack) size() int {
-	if stack.isEmpty() {
-		return 0
-	}
-
-	return len(stack.items)
-}
-
-func (stack *Stack) push(item rune) {
-	stack.items = append(stack.items, item)
-}
-
-func (stack *Stack) pop() rune {
-	if len(stack.items) <= 0 {
-		return -1
-	}
-
-	lastItem := stack.items[len(stack.items)-1]
-	stack.items = stack.items[:len(stack.items)-1]
-	return lastItem
-}
-
-func (stack *Stack) peak() rune {
-	if len(stack.items) <= 0 {
-		return -1
-	}
-
-	return stack.items[len(stack.items)-1]
-}
-
-const (
-	COMMAND         Operation      = "$"
-	DIRECTORY       Operation      = "dir"
-	COMMAND_VALUE   OperationValue = 1
-	DIRECTORY_VALUE OperationValue = 2
-)
-
-const MAX_DIRACTORY_SIZE int = 100000
-
-/*
-Add the size of the last popped diractory to all the parent diractories
-*/
-func addSizeToTheParentDiractory(stack Stack, diractoryMap map[rune]int, size int) {
-	if stack.isEmpty() {
-		return
-	}
-
-	diractoryMap[stack.peak()] += size
-}
-
-/*
-Determine what kind of operation does the line is requesting
-*/
-func getOperation(operation string) int {
-	switch operation {
-	case string(COMMAND):
-		return 1
-	case string(DIRECTORY):
-		return 2
-	default:
-		return -1
-	}
-}
-
-/* Get the largest value close to 100,000 */
-func getLargetValue(diractoryMap map[rune]int) int {
-	var largestSum int
-
-	for _, value := range diractoryMap {
-		if value <= MAX_DIRACTORY_SIZE && value > largestSum {
-			largestSum = value
-		}
-	}
-
-	return largestSum
-}
-
 func main() {
 	file, err := os.Open("NSLInput.txt")
 	if err != nil {
@@ -104,79 +16,76 @@ func main() {
 	}
 	defer file.Close()
 
-	diractorySizeMap := make(map[rune]int)
-	var directoryStack Stack
+	directorySizes := make(map[string]int)
+	var currentDirectory string
+	directoryStack := []string{"/"} // Initialize with root directory
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		commands := strings.Split(scanner.Text(), " ")
+		line := scanner.Text()
+		parts := strings.Fields(line)
 
-		operation := -1
-		if len(commands) <= 1 {
+		if len(parts) < 2 {
+			continue // Skip invalid lines
+		}
+
+		command := parts[0]
+		operation := parts[1]
+
+		// Ignore the dir command
+		if command == "dir" {
 			continue
 		}
 
-		// Find out what kind of command the line is doing
-		operation = getOperation(commands[0])
-
-		var fileName rune
-		if operation != -1 {
-			// Based on the operation treat each line seperately
-			switch operation {
-			case int(COMMAND_VALUE):
-				// Ignore 'ls' command
-				if len(commands) == 2 {
-					continue
+		switch operation {
+		case "cd":
+			directory := parts[2]
+			if directory == "/" {
+				// Move to root directory
+				currentDirectory = "/"
+				directoryStack = []string{"/"}
+			} else if directory == ".." {
+				// Move up one level
+				if len(directoryStack) > 1 {
+					directoryStack = directoryStack[:len(directoryStack)-1]
+					currentDirectory = directoryStack[len(directoryStack)-1]
 				}
-
-				file := commands[2]
-
-				if file == ".." {
-					lastDiractory := directoryStack.pop()
-					// Add the size to the parent diractory
-					addSizeToTheParentDiractory(directoryStack, diractorySizeMap, diractorySizeMap[lastDiractory])
+			} else {
+				// Move to a subdirectory
+				if len(directoryStack) <= 1 {
+					currentDirectory += directory
 				} else {
-					fileName = []rune(file)[0]
-
-					// Add diractory to the stack
-					directoryStack.push(fileName)
-					// Add the diractory to the size map
-					diractorySizeMap[fileName] = 0
+					currentDirectory += "/" + directory
 				}
-			case int(DIRECTORY_VALUE):
-				continue
-			default:
-				fmt.Println("Invalid operation found.")
+				directoryStack = append(directoryStack, currentDirectory)
 			}
-		} else {
-			// Add the file size to the map
-			value, err := strconv.Atoi(commands[0])
+		case "ls":
+			// Skip "ls" commands
+		default:
+			// Parse file size and update directory size
+			size, err := strconv.Atoi(command)
 			if err != nil {
-				fmt.Println("Invalid operation:", err)
+				log.Printf("Error parsing size: %v", err)
+				continue
 			}
+			directorySizes[currentDirectory] += size
 
-			// Store value in the parent file (store in the stack)
-			fileName = directoryStack.peak()
+			// Add the size to the total size of the root diractory
+			directorySizes["/"] += size
+			// Also add the size to the parent diractories
+			parentDiractories := strings.Split(currentDirectory, "/")
+			if len(parentDiractories) > 2 {
+				for _, dir := range parentDiractories {
+					if dir == "" {
+						continue
+					}
 
-			_, ok := diractorySizeMap[fileName]
-			if !ok {
-				fileName = []rune(commands[1])[0]
+					if dir != string(currentDirectory[len(currentDirectory)-1]) {
+						dir = "/" + dir
+						directorySizes[dir] += size
+					}
+				}
 			}
-
-			diractorySizeMap[fileName] += value
-		}
-	}
-
-	// There should only by root diractory in the stack
-	if directoryStack.size() >= 2 {
-		for {
-			if directoryStack.size() <= 1 {
-				break
-			}
-
-			lastDiractory := directoryStack.pop()
-			// Add the size to the parent diractory
-			addSizeToTheParentDiractory(directoryStack, diractorySizeMap, diractorySizeMap[lastDiractory])
 		}
 	}
 
@@ -184,8 +93,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(diractorySizeMap)
+	// Calculate the sum of total sizes of directories <= 100000
+	largetTotalSize := 0
+	for _, size := range directorySizes {
+		if size <= 100000 && largetTotalSize < size {
+			largetTotalSize = size
+		}
+	}
 
-	// Count total size of all the diractories
-	fmt.Println("The sum of the total size of directories is:", getLargetValue(diractorySizeMap))
+	fmt.Println("The sum of total sizes of directories is: ", largetTotalSize)
 }
