@@ -10,7 +10,6 @@ import (
 )
 
 func generateListFromInput(forestGrid [][]int, gridRow int, input string) {
-
 	gridCounter := 0
 	/*
 		Iterate over the input
@@ -35,6 +34,85 @@ func generateListFromInput(forestGrid [][]int, gridRow int, input string) {
 
 func getVisibleTree(forestGrid [][]int) int {
 	visibleTree := 0
+
+	fmt.Println(forestGrid)
+
+	for rowIndex, row := range forestGrid {
+		for colIndex := range row {
+			// If the tree is at the edge then its obviously visible so ignore it
+			if rowIndex-1 < 0 || rowIndex+1 >= len(forestGrid) || colIndex-1 < 0 || colIndex+1 >= len(forestGrid) {
+				visibleTree++
+
+				continue
+			}
+
+			currentTree := forestGrid[rowIndex][colIndex]
+
+			// Check if the tree is visible from all diractions
+			isVisible := true
+			// LEFT
+			colCounter := colIndex
+			for colCounter > 0 {
+				// fmt.Println("LEFT CHECK", rowIndex, colIndex, currentTree)
+				if currentTree < forestGrid[rowIndex][colIndex-1] {
+					isVisible = false
+					break
+				}
+
+				colCounter--
+			}
+			if isVisible {
+				visibleTree++
+				continue
+			}
+
+			// RIGHT
+			colCounter = colIndex
+			for colCounter < len(forestGrid[rowIndex])-1 {
+				if currentTree < forestGrid[rowIndex][colIndex+1] {
+					isVisible = false
+					break
+				}
+
+				colCounter++
+			}
+			if isVisible {
+				visibleTree++
+				continue
+			}
+
+			// TOP
+			rowCounter := rowIndex
+			for rowCounter > 0 {
+				if currentTree < forestGrid[rowIndex-1][colIndex] {
+					isVisible = false
+					break
+				}
+
+				rowCounter--
+			}
+			if isVisible {
+				visibleTree++
+				continue
+			}
+
+			// BOTTOM
+			rowCounter = rowIndex
+			for rowCounter > len(forestGrid[rowCounter])-1 {
+				if currentTree < forestGrid[rowIndex+1][colIndex] {
+					isVisible = false
+					break
+				}
+
+				rowCounter++
+			}
+			if isVisible {
+				visibleTree++
+				continue
+			}
+
+		}
+	}
 
 	return visibleTree
 }
