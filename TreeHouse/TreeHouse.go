@@ -9,129 +9,19 @@ import (
 	"unicode"
 )
 
-func generateListFromInput(forestGrid [][]int, gridRow int, input string) {
-	gridCounter := 0
-	/*
-		Iterate over the input
-		convert each char to int and add it to the 2D array
-	*/
-	for _, char := range input {
-		// Check if the character is a digit
-		if unicode.IsDigit(char) {
-			// Convert the character to an integer
-			num, err := strconv.Atoi(string(char))
-			if err != nil {
-				fmt.Println("Error converting character to integer:", err)
-				continue
-			}
-			// Append the integer to the 2D slice
-			forestGrid[gridRow][gridCounter] = num
-
-			gridCounter++
-		}
-	}
-}
-
-func getVisibleTree(forestGrid [][]int) int {
-	visibleTree := 0
-
-	fmt.Println(forestGrid)
-
-	for rowIndex, row := range forestGrid {
-		for colIndex := range row {
-			// If the tree is at the edge then its obviously visible so ignore it
-			if rowIndex-1 < 0 || rowIndex+1 >= len(forestGrid) || colIndex-1 < 0 || colIndex+1 >= len(forestGrid) {
-				visibleTree++
-
-				continue
-			}
-
-			currentTree := forestGrid[rowIndex][colIndex]
-
-			// Check if the tree is visible from all diractions
-			isVisible := true
-			// LEFT
-			colCounter := colIndex
-			for colCounter > 0 {
-				// fmt.Println("LEFT CHECK", rowIndex, colIndex, currentTree)
-				if currentTree < forestGrid[rowIndex][colIndex-1] {
-					isVisible = false
-					break
-				}
-
-				colCounter--
-			}
-			if isVisible {
-				visibleTree++
-				continue
-			}
-
-			// RIGHT
-			colCounter = colIndex
-			for colCounter < len(forestGrid[rowIndex])-1 {
-				if currentTree < forestGrid[rowIndex][colIndex+1] {
-					isVisible = false
-					break
-				}
-
-				colCounter++
-			}
-			if isVisible {
-				visibleTree++
-				continue
-			}
-
-			// TOP
-			rowCounter := rowIndex
-			for rowCounter > 0 {
-				if currentTree < forestGrid[rowIndex-1][colIndex] {
-					isVisible = false
-					break
-				}
-
-				rowCounter--
-			}
-			if isVisible {
-				visibleTree++
-				continue
-			}
-
-			// BOTTOM
-			rowCounter = rowIndex
-			for rowCounter > len(forestGrid[rowCounter])-1 {
-				if currentTree < forestGrid[rowIndex+1][colIndex] {
-					isVisible = false
-					break
-				}
-
-				rowCounter++
-			}
-			if isVisible {
-				visibleTree++
-				continue
-			}
-
-		}
-	}
-
-	return visibleTree
-}
-
 func main() {
-	file, err := os.Open("TreeHouseDemo.txt")
+	file, err := os.Open("TreeHouseInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Close this file when system stops executing
 	defer file.Close()
 
-	// Scanner to read the file
 	scanner := bufio.NewScanner(file)
 
-	rows := 0
-
-	for scanner.Scan() {
-		rows += 1
+	// Assuming all rows have the same length, determine cols from the first line
+	var cols int
+	if scanner.Scan() {
+		cols = len(scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
@@ -143,34 +33,111 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Now, scan the file again to create a 2D slice
+	// Re-initialize the scanner and create the 2D array
 	scanner = bufio.NewScanner(file)
-	// Create the 2D array
-	cols := rows
-	forestGrid := make([][]int, rows)
-	for i := range forestGrid {
-		forestGrid[i] = make([]int, cols)
-	}
-	gridRowCounter := 0
-
+	forestGrid := make([][]int, 0, cols) // Set capacity to cols, but length to 0
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		// Generate the 2D array from every line
-		generateListFromInput(forestGrid, gridRowCounter, line)
-
-		// Increment the row counter
-		gridRowCounter++
+		forestRow, err := generateListFromInput(line)
+		if err != nil {
+			log.Fatal(err)
+		}
+		forestGrid = append(forestGrid, forestRow)
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	/*
-	 Now we have the populated 2D array
-	 Figure out how many trees are visible
-	*/
 	visibleTree := getVisibleTree(forestGrid)
-
 	fmt.Printf("There are %d trees visible from outside the grid", visibleTree)
+}
+
+// Updated generateListFromInput function to return a slice and an error
+func generateListFromInput(input string) ([]int, error) {
+	forestRow := make([]int, len(input))
+	for i, char := range input {
+		if !unicode.IsDigit(char) {
+			return nil, fmt.Errorf("invalid character in input: %v", string(char))
+		}
+		num, err := strconv.Atoi(string(char))
+		if err != nil {
+			return nil, err
+		}
+		forestRow[i] = num
+	}
+	return forestRow, nil
+}
+
+func getVisibleTree(forestGrid [][]int) int {
+	visibleTree := 0
+
+	for rowIndex, row := range forestGrid {
+		for colIndex := range row {
+			// Edge trees are always visible
+			if rowIndex == 0 || rowIndex == len(forestGrid)-1 || colIndex == 0 || colIndex == len(row)-1 {
+				visibleTree++
+				continue
+			}
+
+			currentTree := forestGrid[rowIndex][colIndex]
+			isVisible := false
+
+			// Check in all directions, breaking early if visibility is confirmed
+			// LEFT
+			for c := colIndex - 1; c >= 0; c-- {
+				if forestGrid[rowIndex][c] < currentTree {
+					// fmt.Println("LEFT", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+					isVisible = true
+				} else {
+					isVisible = false
+					break
+				}
+			}
+
+			// RIGHT
+			if !isVisible {
+				for c := colIndex + 1; c < len(row); c++ {
+					if forestGrid[rowIndex][c] < currentTree {
+						// fmt.Println("RIGHT", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+						isVisible = true
+					} else {
+						isVisible = false
+						break
+					}
+				}
+			}
+
+			// TOP
+			if !isVisible {
+				for r := rowIndex - 1; r >= 0; r-- {
+					if forestGrid[r][colIndex] < currentTree {
+						// fmt.Println("TOP", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+						isVisible = true
+					} else {
+						isVisible = false
+						break
+					}
+				}
+			}
+
+			// BOTTOM
+			if !isVisible {
+				for r := rowIndex + 1; r < len(forestGrid); r++ {
+					if forestGrid[r][colIndex] < currentTree {
+						// fmt.Println("BOTTOM", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+						isVisible = true
+					} else {
+						isVisible = false
+						break
+					}
+				}
+			}
+
+			if isVisible {
+				visibleTree++
+			}
+		}
+	}
+
+	return visibleTree
 }
