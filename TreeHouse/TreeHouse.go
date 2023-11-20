@@ -48,7 +48,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	visibleTree := getVisibleTree(forestGrid)
+	visibleTree := 0
+
+	// Check visibility for each tree
+	for rowIndex := range forestGrid {
+		for colIndex := range forestGrid[rowIndex] {
+			// Edge trees are always visible
+			if rowIndex == 0 || rowIndex == len(forestGrid)-1 || colIndex == 0 || colIndex == len(forestGrid[rowIndex])-1 {
+				visibleTree++
+				continue
+			}
+
+			if isTreeVisible(forestGrid, rowIndex, colIndex, -1, 0) || isTreeVisible(forestGrid, rowIndex, colIndex, 1, 0) || isTreeVisible(forestGrid, rowIndex, colIndex, 0, -1) || isTreeVisible(forestGrid, rowIndex, colIndex, 0, 1) {
+				visibleTree++
+			}
+		}
+	}
+
 	fmt.Printf("There are %d trees visible from outside the grid", visibleTree)
 }
 
@@ -68,76 +84,88 @@ func generateListFromInput(input string) ([]int, error) {
 	return forestRow, nil
 }
 
-func getVisibleTree(forestGrid [][]int) int {
-	visibleTree := 0
+func isTreeVisible(forestGrid [][]int, row int, col int, rowDir int, colDir int) bool {
+	currentTree := forestGrid[row][col]
 
-	for rowIndex, row := range forestGrid {
-		for colIndex := range row {
-			// Edge trees are always visible
-			if rowIndex == 0 || rowIndex == len(forestGrid)-1 || colIndex == 0 || colIndex == len(row)-1 {
-				visibleTree++
-				continue
-			}
-
-			currentTree := forestGrid[rowIndex][colIndex]
-			isVisible := false
-
-			// Check in all directions, breaking early if visibility is confirmed
-			// LEFT
-			for c := colIndex - 1; c >= 0; c-- {
-				if forestGrid[rowIndex][c] < currentTree {
-					// fmt.Println("LEFT", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
-					isVisible = true
-				} else {
-					isVisible = false
-					break
-				}
-			}
-
-			// RIGHT
-			if !isVisible {
-				for c := colIndex + 1; c < len(row); c++ {
-					if forestGrid[rowIndex][c] < currentTree {
-						// fmt.Println("RIGHT", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
-						isVisible = true
-					} else {
-						isVisible = false
-						break
-					}
-				}
-			}
-
-			// TOP
-			if !isVisible {
-				for r := rowIndex - 1; r >= 0; r-- {
-					if forestGrid[r][colIndex] < currentTree {
-						// fmt.Println("TOP", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
-						isVisible = true
-					} else {
-						isVisible = false
-						break
-					}
-				}
-			}
-
-			// BOTTOM
-			if !isVisible {
-				for r := rowIndex + 1; r < len(forestGrid); r++ {
-					if forestGrid[r][colIndex] < currentTree {
-						// fmt.Println("BOTTOM", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
-						isVisible = true
-					} else {
-						isVisible = false
-						break
-					}
-				}
-			}
-
-			if isVisible {
-				visibleTree++
-			}
+	for r, c := row+rowDir, col+colDir; r >= 0 && r < len(forestGrid) && c >= 0 && c < len(forestGrid[row]); r, c = r+rowDir, c+colDir {
+		if forestGrid[r][c] >= currentTree {
+			return false
 		}
 	}
 
-	return visibleTree
+	return true
 }
+
+// func getVisibleTree(forestGrid [][]int) int {
+// 	visibleTree := 0
+
+// 	for rowIndex, row := range forestGrid {
+// 		for colIndex := range row {
+// 			// Edge trees are always visible
+// 			if rowIndex == 0 || rowIndex == len(forestGrid)-1 || colIndex == 0 || colIndex == len(row)-1 {
+// 				visibleTree++
+// 				continue
+// 			}
+
+// 			currentTree := forestGrid[rowIndex][colIndex]
+// 			isVisible := false
+
+// 			// Check in all directions, breaking early if visibility is confirmed
+// 			// LEFT
+// 			for c := colIndex - 1; c >= 0; c-- {
+// 				if forestGrid[rowIndex][c] < currentTree {
+// 					// fmt.Println("LEFT", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+// 					isVisible = true
+// 				} else {
+// 					isVisible = false
+// 					break
+// 				}
+// 			}
+
+// 			// RIGHT
+// 			if !isVisible {
+// 				for c := colIndex + 1; c < len(row); c++ {
+// 					if forestGrid[rowIndex][c] < currentTree {
+// 						// fmt.Println("RIGHT", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+// 						isVisible = true
+// 					} else {
+// 						isVisible = false
+// 						break
+// 					}
+// 				}
+// 			}
+
+// 			// TOP
+// 			if !isVisible {
+// 				for r := rowIndex - 1; r >= 0; r-- {
+// 					if forestGrid[r][colIndex] < currentTree {
+// 						// fmt.Println("TOP", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+// 						isVisible = true
+// 					} else {
+// 						isVisible = false
+// 						break
+// 					}
+// 				}
+// 			}
+
+// 			// BOTTOM
+// 			if !isVisible {
+// 				for r := rowIndex + 1; r < len(forestGrid); r++ {
+// 					if forestGrid[r][colIndex] < currentTree {
+// 						// fmt.Println("BOTTOM", rowIndex, colIndex, forestGrid[rowIndex][colIndex])
+// 						isVisible = true
+// 					} else {
+// 						isVisible = false
+// 						break
+// 					}
+// 				}
+// 			}
+
+// 			if isVisible {
+// 				visibleTree++
+// 			}
+// 		}
+// 	}
+
+// 	return visibleTree
+// }
