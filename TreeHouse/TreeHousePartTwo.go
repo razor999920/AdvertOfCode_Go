@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("TreeHouseDemo.txt")
+	file, err := os.Open("TreeHouseInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,17 +72,12 @@ func main() {
 			up := getScenicScoreForTree(forestGrid, row, col, -1, 0)
 			down := getScenicScoreForTree(forestGrid, row, col, +1, 0)
 
-			fmt.Printf("row: %v, col: %v, tree: %v \n", row, col, forestGrid[row][col])
-
 			scenicScore = up * down * left * right
 
-			fmt.Println("Score: ", scenicScore)
 			// Add Scenic score for the current tree
 			scenicGrid = append(scenicGrid, scenicScore)
 		}
 	}
-
-	fmt.Println(scenicGrid)
 
 	fmt.Printf("The highest scenic score for a tree in the following grid is %v", getHighestScenicScore(scenicGrid))
 }
