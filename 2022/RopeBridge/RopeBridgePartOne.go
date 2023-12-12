@@ -10,6 +10,9 @@ import (
 )
 
 type MotionGrid [][]string
+type Coordinates struct {
+	x, y interface{}
+}
 
 func main() {
 	file, err := os.Open("RopeBridgeDemoInput.txt")
@@ -33,40 +36,49 @@ func main() {
 	headCol := 0
 	tailRow := 4
 	tailCol := 0
+	// Tail Position Counter
+	tailCounter := 0
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		instruction := scanner.Text()
 
-		instuctionList := strings.Split(instruction, " ")
+		instructionList := strings.Split(instruction, " ")
 		if len(instruction) < 2 {
 			log.Printf("Invalid instructions %v", instruction)
 			continue
 		}
 
-		command := instuctionList[0]
-		position, err := strconv.Atoi(instuctionList[1])
+		command := instructionList[0]
+		position, err := strconv.Atoi(instructionList[1])
 		if err != nil {
 			log.Printf("Unable to parse instruction to int %v", instruction)
 			continue
 		}
 
 		// Move Head
-		headRow, headCol, tailRow, tailCol = motionGrid.moveHead(command, position, headRow, headCol, tailRow, tailCol)
+		currentTailCounter := 0
+		headRow, headCol, tailRow, tailCol, currentTailCounter = motionGrid.moveHead(command, position, headRow, headCol, tailRow, tailCol)
+		// Add Tail's position
+		tailCounter += currentTailCounter
 
 		motionGrid.printMotionGrid()
 		fmt.Println()
 	}
+
+	fmt.Printf("The Tail of the rope visits %d postions", tailCounter)
 }
 
-func (motionGrid *MotionGrid) moveHead(command string, position, headRow, headCol, tailRow, tailCol int) (hRow, hCol, tRow, tCol int) {
+func (motionGrid *MotionGrid) moveHead(command string, position, headRow, headCol, tailRow, tailCol int) (hRow, hCol, tRow, tCol, tailCounter int) {
 	/* Set new Row & Col */
 	newHeadRow := headRow
 	newHeadCol := headCol
 	newTailRow := tailRow
 	newTailCol := tailCol
 
+	tailCounter = 0
 	positionCounter := 1
+
 	for positionCounter <= position {
 		switch command {
 		case "L":
@@ -93,8 +105,8 @@ func (motionGrid *MotionGrid) moveHead(command string, position, headRow, headCo
 		positionCounter += 1
 
 		// Figure out Tail's new position based on H's position
-		// If Tail is touching Head the ignore
-		if ((newHeadRow-1 == newTailRow || newHeadRow+1 == newTailRow) && (newHeadCol == newTailCol)) || ((newHeadCol-1 == newTailCol || newHeadCol+1 == newTailCol) && (newHeadRow == newTailRow)) {
+		// If Tail is touching Head to ignore
+		if ((newHeadRow-1 == newTailRow || newHeadRow+1 == newTailRow) && (newHeadCol == newTailCol)) || ((newHeadCol-1 == newTailCol || newHeadCol+1 == newTailCol) && (newHeadRow == newTailRow)) || (newHeadRow == newTailRow && newHeadCol == newTailCol) {
 			continue
 		}
 
@@ -111,18 +123,44 @@ func (motionGrid *MotionGrid) moveHead(command string, position, headRow, headCo
 				newTailRow -= 1
 			}
 		} else {
-			if newHeadRow+2 == newTailRow {
-				newTailRow -= 1
-			} else if newHeadRow-2 == newTailRow {
+			if newHeadRow == newTailRow+2 {
 				newTailRow += 1
-			} else if newHeadCol+2 == newTailCol {
-				newTailCol -= 1
-			} else if newHeadCol-2 == newTailCol {
+				if newHeadCol > newTailCol {
+					newTailCol += 1
+				} else if newHeadCol < newTailCol {
+					newTailCol -= 1
+				}
+			} else if newHeadRow == newTailRow-2 {
+				newTailRow -= 1
+
+				if newHeadCol > newTailCol {
+					newTailCol += 1
+				} else if newHeadCol < newTailCol {
+					newTailCol -= 1
+				}
+			} else if newHeadCol == newTailCol+2 {
 				newTailCol += 1
+
+				if newHeadRow > newTailRow {
+					newTailRow += 1
+				} else if newHeadRow < newTailRow {
+					newTailRow -= 1
+				}
+			} else if newHeadCol == newTailCol-2 {
+				newTailCol -= 1
+
+				if newHeadRow > newTailRow {
+					newTailRow += 1
+				} else if newHeadRow < newTailRow {
+					newTailRow -= 1
+				}
 			}
 		}
 
-		fmt.Println(newHeadRow, newHeadCol, newTailRow, newTailCol)
+		// Make sure the tail position changed
+		if tailRow == newTailRow && tailCol == newTailCol {
+			continue
+		}
 
 		// TAIL's new position on the grid
 		// Remove tail's trail from the grid (Ignore for first iteration)
@@ -133,10 +171,21 @@ func (motionGrid *MotionGrid) moveHead(command string, position, headRow, headCo
 		(*motionGrid)[newTailRow][newTailCol] = "T"
 		tailRow = newTailRow
 		tailCol = newTailCol
+
+		tailCounter += 1
 	}
 
-	return newHeadRow, newHeadCol, newTailRow, newTailCol
+	return newHeadRow, newHeadCol, newTailRow, newTailCol, tailCounter
+}
 
+func coordinatesExists(visitedCoordinates []Coordinates, coordinates Coordinates) bool {
+	for _, c := range visitedCoordinates {
+		if c == coordinates {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (motionGrid MotionGrid) printMotionGrid() {
