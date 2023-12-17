@@ -15,7 +15,7 @@ type Coordinates struct {
 }
 
 func main() {
-	file, err := os.Open("RopeBridgeDemoInput.txt")
+	file, err := os.Open("RopeBridgeInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
