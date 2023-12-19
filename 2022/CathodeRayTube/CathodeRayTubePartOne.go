@@ -13,56 +13,86 @@ const INSTRUCTION_ADDX_PREFIX = "addx"
 const INSTRUCTIONS_NOOP_PREFIX = "noop"
 
 func main() {
-	file, err := os.Open("CRTDemoInputOne.txt")
+	file, err := os.Open("CRTDemoInputTwo.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	/* Close the file */
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(file)
 
 	/* Variables */
-	cpuRegister := 0
+	cycleCount := 0
+	cpuRegisterValue := 1
+	cpuSignalStrength := 0
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		instructions := scanner.Text()
 
-		fmt.Println(instructions)
-		registerValue, err := getTotalCPUCycles(instructions)
+		cycles, registerValue, signalStrengthValue, err := getRegisterValueFromInstruction(instructions, cycleCount, cpuRegisterValue)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		cpuRegister += registerValue
+		cycleCount = cycles
+		cpuRegisterValue += registerValue
+		cpuSignalStrength += signalStrengthValue
 	}
 
-	fmt.Printf("The total CPU cycles are %v", cpuRegister)
+	fmt.Printf("The sum of all signal strenght is %v", cpuSignalStrength)
 }
 
-func getTotalCPUCycles(instructions string) (int, error) {
-	totalCycles := 0
+func getRegisterValueFromInstruction(instruction string, currentCycles, currentRegisterValue int) (int, int, int, error) {
+	cycleCount := 0
+	registerValue := 0
+	signalStrengthValue := 0
 
-	if strings.HasPrefix(instructions, INSTRUCTIONS_NOOP_PREFIX) {
-		totalCycles += 1
-	} else if strings.HasPrefix(instructions, INSTRUCTION_ADDX_PREFIX) {
-		instructionList := strings.Fields(instructions)
+	if strings.HasPrefix(instruction, INSTRUCTIONS_NOOP_PREFIX) {
+		cycleCount = 1
+	} else if strings.HasPrefix(instruction, INSTRUCTION_ADDX_PREFIX) {
+		cycleCount = 2
+
+		/* Get register value */
+		instructionValue := 0
+		instructionList := strings.Fields(instruction)
 		if len(instructionList) <= 1 {
-			return 0, fmt.Errorf("Invalid instructions provided %c", instructionList)
+			return 0, 0, 0, fmt.Errorf("Invalid instructions provided %c", instructionList)
 		}
-		registerValue, err := strconv.Atoi(instructionList[1])
+		value, err := strconv.Atoi(instructionList[1])
 		if err != nil {
-			return 0, fmt.Errorf("Invalid instruction provided %c", instructionList)
+			return 0, 0, 0, fmt.Errorf("Invalid instruction provided %c", instructionList)
 		}
 
-		for i := 0; i >= 2; i++ {
-
-		}
+		instructionValue = value
 
 		// Now add the register value
-		totalCycles += registerValue
+		registerValue += instructionValue
 	}
 
-	return totalCycles, nil
+	// Add the cycle to the total count
+	currentCycles += cycleCount
+
+	/* Check if we are gathering signal strength this iteration */
+	if cycleCount == 1 {
+		if currentCycles == 20 || currentCycles == 60 || currentCycles == 100 || currentCycles == 140 || currentCycles == 180 || currentCycles == 220 {
+			signalStrengthValue = currentRegisterValue * currentCycles
+		}
+	} else if cycleCount == 2 {
+		if (currentCycles-1) == 20 || (currentCycles-1) == 60 || (currentCycles-1) == 100 || (currentCycles-1) == 140 || (currentCycles-1) == 180 || (currentCycles-1) == 220 {
+			signalStrengthValue = currentRegisterValue * (currentCycles - 1)
+		}
+
+		if currentCycles == 20 || currentCycles == 60 || currentCycles == 100 || currentCycles == 140 || currentCycles == 180 || currentCycles == 220 {
+			signalStrengthValue = currentRegisterValue * currentCycles
+		}
+	}
+
+	return currentCycles, registerValue, signalStrengthValue, nil
 }
