@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="66aca5e8-0184-48d7-a088-a96f971cba07" name="Changes" comment="Solution for Demo">
+      <change afterPath="$PROJECT_DIR$/2022/CathodeRayTube/CRTInput.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/2022/CathodeRayTube/CathodeRayTubePartOne.go" beforeDir="false" afterPath="$PROJECT_DIR$/2022/CathodeRayTube/CathodeRayTubePartOne.go" afterDir="false" />
     </list>
@@ -138,7 +139,7 @@
       <workItem from="1702428709361" duration="33000" />
       <workItem from="1702430059656" duration="1701000" />
       <workItem from="1702842488777" duration="5409000" />
-      <workItem from="1702944511563" duration="7264000" />
+      <workItem from="1702944511563" duration="7987000" />
     </task>
     <task id="LOCAL-00001" summary="Solution for Demo">
       <option name="closed" value="true" />

@@ -13,7 +13,7 @@ const INSTRUCTION_ADDX_PREFIX = "addx"
 const INSTRUCTIONS_NOOP_PREFIX = "noop"
 
 func main() {
-	file, err := os.Open("CRTDemoInputTwo.txt")
+	file, err := os.Open("CRTInput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,6 +44,8 @@ func main() {
 		cycleCount = cycles
 		cpuRegisterValue += registerValue
 		cpuSignalStrength += signalStrengthValue
+
+		fmt.Println(instructions+" | ", cycleCount, cpuRegisterValue, cpuSignalStrength)
 	}
 
 	fmt.Printf("The sum of all signal strenght is %v", cpuSignalStrength)
